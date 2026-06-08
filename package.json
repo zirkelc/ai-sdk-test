@@ -1,13 +1,13 @@
 {
-  "name": "<PACKAGE>",
-  "version": "1.0.0",
-  "description": "<DESCRIPTION>",
+  "name": "ai-test",
+  "version": "0.0.1",
+  "description": "WIP",
   "keywords": [],
-  "license": "<LICENSE>",
-  "author": "<AUTHOR>",
+  "license": "MIT",
+  "author": "Chris Cook",
   "repository": {
     "type": "git",
-    "url": "https://github.com/<USERNAME>/<REPO>"
+    "url": "https://github.com/zirkelc/ai-test"
   },
   "files": [
     "dist"
