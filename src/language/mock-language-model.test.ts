@@ -1,0 +1,244 @@
+import { generateText, streamText } from 'ai';
+import { describe, expect, test } from 'vitest';
+import { Content } from './content.js';
+import { MockLanguageModel } from './mock-language-model.js';
+import { Options } from './options.js';
+import { Stream } from './stream.js';
+import { StreamParts } from './stream-parts.js';
+
+describe('MockLanguageModel', () => {
+  describe('generate', () => {
+    test('should return text content from a string shorthand', async () => {
+      // Arrange
+      const model = MockLanguageModel('Hello, world!');
+
+      // Act
+      const result = await generateText({ model, prompt: 'Hi', ...Options.generate });
+
+      // Assert
+      expect(result.text).toBe('Hello, world!');
+    });
+
+    test('should throw from an Error shorthand', async () => {
+      // Arrange
+      const model = MockLanguageModel(new Error('boom'));
+
+      // Act
+      const result = generateText({ model, prompt: 'Hi', ...Options.generate });
+
+      // Assert
+      await expect(result).rejects.toThrow();
+    });
+
+    test('should return explicit content built from Content atoms', async () => {
+      // Arrange
+      const model = MockLanguageModel({ content: [Content.text('explicit')] });
+
+      // Act
+      const result = await generateText({ model, prompt: 'Hi', ...Options.generate });
+
+      // Assert
+      expect(result.text).toBe('explicit');
+      expect(result.finishReason).toBe('stop');
+    });
+
+    test('should surface a tool call from Content.toolCall', async () => {
+      // Arrange
+      const model = MockLanguageModel({
+        content: [Content.toolCall({ toolCallId: 'call-1', toolName: 'weather', input: { city: 'Tokyo' } })],
+      });
+
+      // Act
+      const result = await generateText({ model, prompt: 'Hi', ...Options.generate });
+
+      // Assert
+      expect(result.toolCalls.length).toBe(1);
+      expect(result.toolCalls[0]!.toolName).toBe('weather');
+    });
+  });
+
+  describe('stream', () => {
+    test('should stream text from a string shorthand', async () => {
+      // Arrange
+      const model = MockLanguageModel('Hello World');
+
+      // Act
+      const result = streamText({ model, prompt: 'Hi', ...Options.stream });
+      const text = (await Stream.toArray(result.textStream)).join('');
+
+      // Assert
+      expect(text).toBe('Hello World');
+    });
+
+    test('should stream from composed StreamParts', async () => {
+      // Arrange
+      const chunks = [StreamParts.streamStart(), ...StreamParts.text('abcdef', { length: 2 }), StreamParts.finish()];
+      const model = MockLanguageModel({ stream: chunks });
+
+      // Act
+      const result = streamText({ model, prompt: 'Hi', ...Options.stream });
+      const text = (await Stream.toArray(result.textStream)).join('');
+
+      // Assert
+      expect(text).toBe('abcdef');
+    });
+
+    test('should derive a stream from content', async () => {
+      // Arrange
+      const model = MockLanguageModel({ content: [Content.text('derived')] });
+
+      // Act
+      const result = streamText({ model, prompt: 'Hi', ...Options.stream });
+      const text = (await Stream.toArray(result.textStream)).join('');
+
+      // Assert
+      expect(text).toBe('derived');
+    });
+
+    test('should make a string and the equivalent content stream identically', async () => {
+      // Arrange
+      const fromString = MockLanguageModel('Hello');
+      const fromContent = MockLanguageModel({ content: [Content.text('Hello')] });
+      const callOptions = { prompt: [] } as never;
+
+      // Act
+      const stringParts = await Stream.toArray((await fromString.doStream(callOptions)).stream);
+      const contentParts = await Stream.toArray((await fromContent.doStream(callOptions)).stream);
+
+      // Assert
+      expect(stringParts).toEqual(contentParts);
+    });
+
+    test('should stream from a chunks object with delays', async () => {
+      // Arrange
+      const model = MockLanguageModel({
+        stream: { chunks: [...StreamParts.text('fast'), StreamParts.finish()], chunkDelayInMs: 0 },
+      });
+
+      // Act
+      const result = streamText({ model, prompt: 'Hi', ...Options.stream });
+      const text = (await Stream.toArray(result.textStream)).join('');
+
+      // Assert
+      expect(text).toBe('fast');
+    });
+  });
+
+  describe('sequencing', () => {
+    test('should advance through an array of responses per call', async () => {
+      // Arrange
+      const model = MockLanguageModel(['first', 'second']);
+
+      // Act
+      const a = await generateText({ model, prompt: 'Hi', ...Options.generate });
+      const b = await generateText({ model, prompt: 'Hi', ...Options.generate });
+
+      // Assert
+      expect(a.text).toBe('first');
+      expect(b.text).toBe('second');
+    });
+
+    test('should clamp to the last response once the array is exhausted', async () => {
+      // Arrange
+      const model = MockLanguageModel(['only-first', 'last']);
+
+      // Act
+      await generateText({ model, prompt: 'Hi', ...Options.generate });
+      await generateText({ model, prompt: 'Hi', ...Options.generate });
+      const third = await generateText({ model, prompt: 'Hi', ...Options.generate });
+
+      // Assert
+      expect(third.text).toBe('last');
+    });
+  });
+
+  describe('vitest integration', () => {
+    test('should record calls on the vi.fn spy', async () => {
+      // Arrange
+      const model = MockLanguageModel('hi');
+
+      // Act
+      await generateText({ model, prompt: 'question', ...Options.generate });
+
+      // Assert
+      expect(model.doGenerate).toHaveBeenCalledTimes(1);
+      const callArgs = model.doGenerate.mock.calls[0]!;
+      expect(callArgs[0].prompt).toEqual([{ role: 'user', content: [{ type: 'text', text: 'question' }] }]);
+    });
+
+    test('should record calls on the native call array', async () => {
+      // Arrange
+      const model = MockLanguageModel('hi');
+
+      // Act
+      await generateText({ model, prompt: 'question', ...Options.generate });
+
+      // Assert
+      expect(model.doGenerateCalls.length).toBe(1);
+      expect(model.doGenerateCalls[0]!.prompt).toEqual([
+        { role: 'user', content: [{ type: 'text', text: 'question' }] },
+      ]);
+    });
+
+    test('should not call the fallback when the primary succeeds', async () => {
+      // Arrange
+      const primary = MockLanguageModel('primary');
+      const fallback = MockLanguageModel('fallback');
+
+      // Act
+      await generateText({ model: primary, prompt: 'Hi', ...Options.generate });
+
+      // Assert
+      expect(primary.doGenerate).toHaveBeenCalledTimes(1);
+      expect(fallback.doGenerate).toHaveBeenCalledTimes(0);
+    });
+  });
+
+  describe('builders', () => {
+    test('content() should wrap a string into a single text part', () => {
+      // Act
+      const parts = MockLanguageModel.content('hi');
+
+      // Assert
+      expect(parts).toEqual([{ type: 'text', text: 'hi' }]);
+    });
+
+    test('usage() should override defaults per field', () => {
+      // Act
+      const result = MockLanguageModel.usage({ outputTokens: { total: 99 } });
+
+      // Assert
+      expect(result.outputTokens.total).toBe(99);
+      expect(result.inputTokens.total).toBe(10);
+    });
+
+    test('finishReason() should mirror raw from unified', () => {
+      // Act
+      const result = MockLanguageModel.finishReason('length');
+
+      // Assert
+      expect(result).toEqual({ unified: 'length', raw: 'length' });
+    });
+  });
+
+  describe('identity', () => {
+    test('should default provider and auto-increment modelId', () => {
+      // Arrange
+      const a = MockLanguageModel();
+      const b = MockLanguageModel();
+
+      // Act + Assert
+      expect(a.provider).toBe('mock-provider');
+      expect(a.modelId).not.toBe(b.modelId);
+    });
+
+    test('should honor provider and modelId overrides', () => {
+      // Arrange
+      const model = MockLanguageModel('hi', { provider: 'acme', modelId: 'acme-1' });
+
+      // Act + Assert
+      expect(model.provider).toBe('acme');
+      expect(model.modelId).toBe('acme-1');
+    });
+  });
+});

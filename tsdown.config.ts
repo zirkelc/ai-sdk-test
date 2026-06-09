@@ -14,6 +14,6 @@ export default defineConfig({
    */
   publint: true,
   exports: true,
-  entry: 'src/**/index.ts',
+  entry: ['src/index.ts', 'src/language/index.ts'],
   format: ['esm'],
 });
