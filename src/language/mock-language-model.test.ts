@@ -10,7 +10,7 @@ describe('MockLanguageModel', () => {
   describe('generate', () => {
     test('should return text content from a string shorthand', async () => {
       // Arrange
-      const model = MockLanguageModel('Hello, world!');
+      const model = MockLanguageModel.from('Hello, world!');
 
       // Act
       const result = await generateText({ model, prompt: 'Hi', ...Options.generate });
@@ -21,7 +21,7 @@ describe('MockLanguageModel', () => {
 
     test('should throw from an Error shorthand', async () => {
       // Arrange
-      const model = MockLanguageModel(new Error('boom'));
+      const model = MockLanguageModel.from(new Error('boom'));
 
       // Act
       const result = generateText({ model, prompt: 'Hi', ...Options.generate });
@@ -32,7 +32,7 @@ describe('MockLanguageModel', () => {
 
     test('should return explicit content built from Content atoms', async () => {
       // Arrange
-      const model = MockLanguageModel({ content: [Content.text('explicit')] });
+      const model = MockLanguageModel.from({ content: [Content.text('explicit')] });
 
       // Act
       const result = await generateText({ model, prompt: 'Hi', ...Options.generate });
@@ -44,7 +44,7 @@ describe('MockLanguageModel', () => {
 
     test('should surface a tool call from Content.toolCall', async () => {
       // Arrange
-      const model = MockLanguageModel({
+      const model = MockLanguageModel.from({
         content: [Content.toolCall({ toolCallId: 'call-1', toolName: 'weather', input: { city: 'Tokyo' } })],
       });
 
@@ -60,7 +60,7 @@ describe('MockLanguageModel', () => {
   describe('stream', () => {
     test('should stream text from a string shorthand', async () => {
       // Arrange
-      const model = MockLanguageModel('Hello World');
+      const model = MockLanguageModel.from('Hello World');
 
       // Act
       const result = streamText({ model, prompt: 'Hi', ...Options.stream });
@@ -73,7 +73,7 @@ describe('MockLanguageModel', () => {
     test('should stream from composed StreamParts', async () => {
       // Arrange
       const chunks = [StreamParts.streamStart(), ...StreamParts.text('abcdef', { length: 2 }), StreamParts.finish()];
-      const model = MockLanguageModel({ stream: chunks });
+      const model = MockLanguageModel.from({ stream: chunks });
 
       // Act
       const result = streamText({ model, prompt: 'Hi', ...Options.stream });
@@ -85,7 +85,7 @@ describe('MockLanguageModel', () => {
 
     test('should derive a stream from content', async () => {
       // Arrange
-      const model = MockLanguageModel({ content: [Content.text('derived')] });
+      const model = MockLanguageModel.from({ content: [Content.text('derived')] });
 
       // Act
       const result = streamText({ model, prompt: 'Hi', ...Options.stream });
@@ -97,8 +97,8 @@ describe('MockLanguageModel', () => {
 
     test('should make a string and the equivalent content stream identically', async () => {
       // Arrange
-      const fromString = MockLanguageModel('Hello');
-      const fromContent = MockLanguageModel({ content: [Content.text('Hello')] });
+      const fromString = MockLanguageModel.from('Hello');
+      const fromContent = MockLanguageModel.from({ content: [Content.text('Hello')] });
       const callOptions = { prompt: [] } as never;
 
       // Act
@@ -111,7 +111,7 @@ describe('MockLanguageModel', () => {
 
     test('should stream from a chunks object with delays', async () => {
       // Arrange
-      const model = MockLanguageModel({
+      const model = MockLanguageModel.from({
         stream: { chunks: [...StreamParts.text('fast'), StreamParts.finish()], chunkDelayInMs: 0 },
       });
 
@@ -127,7 +127,7 @@ describe('MockLanguageModel', () => {
   describe('sequencing', () => {
     test('should advance through an array of responses per call', async () => {
       // Arrange
-      const model = MockLanguageModel(['first', 'second']);
+      const model = MockLanguageModel.from(['first', 'second']);
 
       // Act
       const a = await generateText({ model, prompt: 'Hi', ...Options.generate });
@@ -140,7 +140,7 @@ describe('MockLanguageModel', () => {
 
     test('should clamp to the last response once the array is exhausted', async () => {
       // Arrange
-      const model = MockLanguageModel(['only-first', 'last']);
+      const model = MockLanguageModel.from(['only-first', 'last']);
 
       // Act
       await generateText({ model, prompt: 'Hi', ...Options.generate });
@@ -155,7 +155,7 @@ describe('MockLanguageModel', () => {
   describe('vitest integration', () => {
     test('should record calls on the vi.fn spy', async () => {
       // Arrange
-      const model = MockLanguageModel('hi');
+      const model = MockLanguageModel.from('hi');
 
       // Act
       await generateText({ model, prompt: 'question', ...Options.generate });
@@ -168,7 +168,7 @@ describe('MockLanguageModel', () => {
 
     test('should record calls on the native call array', async () => {
       // Arrange
-      const model = MockLanguageModel('hi');
+      const model = MockLanguageModel.from('hi');
 
       // Act
       await generateText({ model, prompt: 'question', ...Options.generate });
@@ -182,8 +182,8 @@ describe('MockLanguageModel', () => {
 
     test('should not call the fallback when the primary succeeds', async () => {
       // Arrange
-      const primary = MockLanguageModel('primary');
-      const fallback = MockLanguageModel('fallback');
+      const primary = MockLanguageModel.from('primary');
+      const fallback = MockLanguageModel.from('fallback');
 
       // Act
       await generateText({ model: primary, prompt: 'Hi', ...Options.generate });
@@ -224,8 +224,8 @@ describe('MockLanguageModel', () => {
   describe('identity', () => {
     test('should default provider and auto-increment modelId', () => {
       // Arrange
-      const a = MockLanguageModel();
-      const b = MockLanguageModel();
+      const a = MockLanguageModel.from();
+      const b = MockLanguageModel.from();
 
       // Act + Assert
       expect(a.provider).toBe('mock-provider');
@@ -234,7 +234,7 @@ describe('MockLanguageModel', () => {
 
     test('should honor provider and modelId overrides', () => {
       // Arrange
-      const model = MockLanguageModel('hi', { provider: 'acme', modelId: 'acme-1' });
+      const model = MockLanguageModel.from('hi', { provider: 'acme', modelId: 'acme-1' });
 
       // Act + Assert
       expect(model.provider).toBe('acme');

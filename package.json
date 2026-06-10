@@ -17,6 +17,7 @@
   "exports": {
     ".": "./dist/index.mjs",
     "./language": "./dist/language/index.mjs",
+    "./ui": "./dist/ui/index.mjs",
     "./package.json": "./package.json"
   },
   "scripts": {

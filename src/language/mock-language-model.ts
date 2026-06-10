@@ -227,7 +227,7 @@ const content = (input: string | Array<LanguageModelV3Content>): Array<LanguageM
   typeof input === 'string' ? [Content.text(input)] : input;
 
 /** Builds a full generate result, filling finish reason, usage, and warnings. */
-const result = (input: string | GenerateResultInput): LanguageModelV3GenerateResult =>
+const generateResult = (input: string | GenerateResultInput): LanguageModelV3GenerateResult =>
   buildGenerateResult(typeof input === 'string' ? { content: [Content.text(input)] } : input);
 
 /** Builds a full stream result; a string is assembled into `stream-start` → text → `finish`. */
@@ -256,20 +256,21 @@ const usage = (
 const finishReason = (unified: LanguageModelV3FinishReason['unified'] = 'stop'): LanguageModelV3FinishReason =>
   toFinishReason(unified);
 
+/** Creates a mock `LanguageModelV3` from a response spec (or sequence of them). */
+const from = (input?: MockResponse | Array<MockResponse>, options?: MockLanguageModelOptions): LanguageModelMock =>
+  new LanguageModelMock(input ?? {}, options);
+
 /**
- * Creates a mock `LanguageModelV3` and carries the language-model result builders. Exported as both a
- * value (the factory) and a type (the model instance).
+ * Namespace for building mock language models. `from` creates a mock `LanguageModelV3`; the other
+ * builders assemble the values a model returns. Exported as both a value (the namespace) and a type
+ * (the model instance).
  *
  * @example
- * const model = MockLanguageModel('Hello, world!');
- * const flaky = MockLanguageModel([new Error('rate limited'), 'recovered']);
- * const built = MockLanguageModel({ content: MockLanguageModel.content('Hi') });
+ * const model = MockLanguageModel.from('Hello, world!');
+ * const flaky = MockLanguageModel.from([new Error('rate limited'), 'recovered']);
+ * const built = MockLanguageModel.from({ content: MockLanguageModel.content('Hi') });
  */
-export const MockLanguageModel = Object.assign(
-  (input?: MockResponse | Array<MockResponse>, options?: MockLanguageModelOptions): LanguageModelMock =>
-    new LanguageModelMock(input ?? {}, options),
-  { content, result, streamResult, usage, finishReason },
-);
+export const MockLanguageModel = { from, content, generateResult, streamResult, usage, finishReason };
 
-/** A mock language model instance, as returned by {@link MockLanguageModel}. */
+/** A mock language model instance, as returned by {@link MockLanguageModel.from}. */
 export type MockLanguageModel = LanguageModelMock;
