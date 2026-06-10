@@ -20,6 +20,9 @@
     "./ui": "./dist/ui/index.mjs",
     "./package.json": "./package.json"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "prepublishOnly": "pnpm build",
     "build": "tsdown",
