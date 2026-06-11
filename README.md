@@ -1,11 +1,11 @@
 # ai-test-kit
 
-<p align="center">Test utilities for the AI SDK: mock models, content and stream-part builders, fully type-safe</p>
+<p align="center">Test Kit for AI SDK: mock models, content-builders and stream helpers, fully type-safe</p>
 <p align="center">
   <a href="https://www.npmjs.com/package/ai-test-kit" alt="ai-test-kit"><img src="https://img.shields.io/npm/dt/ai-test-kit?label=ai-test-kit"></a> <a href="https://github.com/zirkelc/ai-test-kit/actions/workflows/ci.yml" alt="CI"><img src="https://img.shields.io/github/actions/workflow/status/zirkelc/ai-test-kit/ci.yml?branch=main"></a>
 </p>
 
-This library provides ergonomic, type-safe helpers for testing code built on the AI SDK: a fluent API to mock [`generateText()`](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-text) / [`streamText()`](https://ai-sdk.dev/docs/reference/ai-sdk-core/stream-text), build content and stream parts, and assert on results. It implements its own `LanguageModelV3` mock and builds on the AI SDK's own stream helpers (`simulateReadableStream` and the stream converters).
+This library provides simple, type-safe helpers for testing AI SDK powered apps with mock models. It turns the low-level `ai/test` primitives into small, composable builders for mocking [`generateText()`](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-text) and [`streamText()`](https://ai-sdk.dev/docs/reference/ai-sdk-core/stream-text), assembling content and stream parts, and asserting on the results, so your tests stay short, deterministic, and fully typed. Mock models are plain `vi.fn()` spies, so the Vitest assertions you already use keep working.
 
 ### Why?
 
@@ -17,11 +17,6 @@ The AI SDK ships `MockLanguageModelV3` and other helpers under `ai/test`, but th
 
 This library provides those helpers as small, composable builders. Models are `vi.fn()` spies, so you can assert on calls with the full Vitest API while also reading the recorded call arguments directly.
 
-Helpers are split by layer, each under its own entry point so an import only pulls in the types it needs:
-
-- `ai-test-kit/language` — the model layer: mock a `LanguageModelV3`, build `LanguageModelV3Content` and stream parts (and later `ai-test-kit/embedding`, `ai-test-kit/image`)
-- `ai-test-kit/ui` — the UI layer: build `UIMessagePart`, `UIMessageChunk`, and `UIMessage` fixtures, optionally typed to your own `UIMessage`
-
 ### Installation
 
 ```bash
@@ -31,6 +26,11 @@ npm install -D ai-test-kit
 `ai` and `vitest` are peer dependencies.
 
 ## Usage
+
+The API is split by layer, each under its own entry point so an import only pulls in the types it needs:
+
+- `ai-test-kit/language` — the model layer: mock a `LanguageModelV3`, generate `LanguageModelV3Content` for [`generateText()`](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-text) and stream parts `LanguageModelV3StreamPart[]` for [`streamText()`](https://ai-sdk.dev/docs/reference/ai-sdk-core/stream-text)
+- `ai-test-kit/ui` — the UI layer: build `UIMessagePart`, `UIMessageChunk`, and `UIMessage` fixtures, optionally typed to your own `UIMessage`
 
 ### Language Models
 
