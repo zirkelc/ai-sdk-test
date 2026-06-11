@@ -28,6 +28,7 @@
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
+    "test:types": "tsc --noEmit -p test-d/tsconfig.json",
     "lint": "oxlint --fix",
     "lint:ci": "oxlint",
     "format": "oxfmt --write",

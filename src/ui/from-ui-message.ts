@@ -20,7 +20,11 @@ type ToolsOf<UI_MESSAGE> = UI_MESSAGE extends UIMessage<unknown, UIDataTypes, in
  * UIChunks.data('weather', { city: 'Tokyo' }); // name and payload typed
  * UIMessages.assistant([UIParts.text('hi')]);
  */
-export const fromUIMessage = <UI_MESSAGE extends UIMessage>() => ({
+export const fromUIMessage = <UI_MESSAGE extends UIMessage>(): {
+  UIParts: ReturnType<typeof createUIParts<DataOf<UI_MESSAGE>, ToolsOf<UI_MESSAGE>>>;
+  UIChunks: ReturnType<typeof createUIChunks<MetadataOf<UI_MESSAGE>, DataOf<UI_MESSAGE>>>;
+  UIMessages: ReturnType<typeof createUIMessages<MetadataOf<UI_MESSAGE>, DataOf<UI_MESSAGE>, ToolsOf<UI_MESSAGE>>>;
+} => ({
   UIParts: createUIParts<DataOf<UI_MESSAGE>, ToolsOf<UI_MESSAGE>>(),
   UIChunks: createUIChunks<MetadataOf<UI_MESSAGE>, DataOf<UI_MESSAGE>>(),
   UIMessages: createUIMessages<MetadataOf<UI_MESSAGE>, DataOf<UI_MESSAGE>, ToolsOf<UI_MESSAGE>>(),
