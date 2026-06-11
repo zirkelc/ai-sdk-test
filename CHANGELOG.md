@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.0](https://github.com/zirkelc/ai-test-kit/compare/v1.0.1...v1.1.0) (2026-06-11)
+
+
+### Features
+
+* **ui:** add UIMessage type inferers ([1510477](https://github.com/zirkelc/ai-test-kit/commit/1510477e207eea9c15f87ef0d4c3f3012f5677c0))
+
+
+### Bug Fixes
+
+* **ui:** preserve optional fields in fromUIMessage bound builders ([dfcd094](https://github.com/zirkelc/ai-test-kit/commit/dfcd094c0595ec9567c1e0438038c699758e5e72))
+
 ## [1.0.1](https://github.com/zirkelc/ai-test-kit/compare/v1.0.0...v1.0.1) (2026-06-11)
 
 
