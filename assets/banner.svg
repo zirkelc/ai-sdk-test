@@ -27,9 +27,9 @@
           fill="none" stroke="url(#acc)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
 
     <!-- three checkmarks, grey -> pink -->
-    <path d="M232 112 L246 126 L270 96" fill="none" stroke="#6b7482" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M342 112 L356 126 L380 96" fill="none" stroke="#ec88c4" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M452 112 L466 126 L490 96" fill="none" stroke="url(#acc)" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M224 110 L244 130 L278 88" fill="none" stroke="#6b7482" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M334 110 L354 130 L388 88" fill="none" stroke="#ec88c4" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M444 110 L464 130 L498 88" fill="none" stroke="url(#acc)" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
 
   <!-- ===== WORDMARK ===== -->
