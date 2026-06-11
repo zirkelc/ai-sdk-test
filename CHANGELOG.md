@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/zirkelc/ai-test-kit/compare/v1.0.0...v1.0.1) (2026-06-11)
+
+
+### Bug Fixes
+
+* **ui:** narrow data/tool/dynamicTool builder return types ([564d13b](https://github.com/zirkelc/ai-test-kit/commit/564d13bfeb2d7aa4f2098caa6cb24ba458dfc432))
+
 ## [1.0.0](https://github.com/zirkelc/ai-test-kit/compare/v0.0.1...v1.0.0) (2026-06-11)
 
 
